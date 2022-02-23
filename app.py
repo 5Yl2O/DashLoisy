@@ -26,59 +26,64 @@ r=requests.get(url)
 res = r.json()
 df_eau=pd.DataFrame.from_dict(res['data'])
 
+#print(df_eau.columns)
+#print(set(df_eau.code_parametre))
 
 # ------------------------------------------------------------------------------
+page_title=html.Div(html.H1("Qualité sanitaire de l'eau des sources de Loisy"))
 
-
-navbar = dbc.NavbarSimple(
-    children=[
-        dbc.NavItem(dbc.NavLink("Page 1", href="#")),
-        dbc.DropdownMenu(
-            children=[
-                dbc.DropdownMenuItem("More pages", header=True),
-                dbc.DropdownMenuItem("Page 2", href="#"),
-                dbc.DropdownMenuItem("Page 3", href="#"),
-            ],
-            nav=True,
-            in_navbar=True,
-            label="More",
-        ),
-    ],
-    brand="NavbarSimple",
-    brand_href="#",
-    color="primary",
-    dark=True,
-)
-
-# App layout
-app.layout = html.Div([
-
-    html.H1("Qualité sanitaire de l'eau des sources de Loisy", style={'text-align': 'center'}),
-
-# la liste des codes param est extraite du df_eau => df[['code_parametre','libelle_parametre']]
-
-
-
-    
-    dcc.Dropdown(id="slct_param",
-                 children=[
-                     {"label": 'Nitrates (en NO3)', "value": 1340},
-                     {"label": "Conductivité à 25°C", "value": 1303},
-                     {"label": "Chlore combiné", "value": 1755},
-                     {"label": "Chlore total", "value": 1399}
+dd_menu=dcc.Dropdown(id="select_param",
+                 options=[
+                     {"label": 'Nitrates (en NO3)', "value": '1340'},
+                     {"label": "Conductivité à 25°C", "value": '1303'},
+                     {"label": "Chlore combiné", "value": '1755'},
+                     {"label": "Chlore total", "value": '1399'}
                  ],
-                 multi=False,
                  value='1340',
-                 className='col-md-6 mb-3'
-                 ),
+                 )
+# App layout
+app.layout = html.Div(
+    [
+        dbc.Row(
+            dbc.Col(
+                page_title,
+                md=11,
+            ),
 
+        ),
+        dbc.Row(
+            dbc.Col(
+                [
+                    dd_menu,
+                    html.Div(id='output_container', children=[]),
+                    dcc.Graph(id='my_conc', figure={}),
+                ],
+                md=11,
+            ),
+            justify='center'
+        ),
 
-    html.Div(id='output_container', children=[]),
-    html.Br(),
+        dbc.Row(
+            dbc.Col(
+                dl.Map(
+                    dl.TileLayer(), style={'height': '50vh'}
+                ),
+                md=11,
+            ),
+        justify="center",
+        ),
+        dbc.Row(
+            [
+                html.Br(),
+                html.Div('Réalisé par XX Votre nom ici !! XX'),
+                html.Br(),
+            ],
+            justify='center'
+        ),
 
-    dcc.Graph(id='my_conc', figure={})
-
-])
+    ],
+    className="pad-row"
+    )
 
 
 # ------------------------------------------------------------------------------
@@ -87,7 +92,7 @@ app.layout = html.Div([
 @app.callback(
     [Output(component_id='output_container', component_property='children'),
      Output(component_id='my_conc', component_property='figure')],
-    [Input(component_id='slct_param', component_property='value')]
+    [Input(component_id='select_param', component_property='value')]
 )
 def update_graph(option_slctd):
 
